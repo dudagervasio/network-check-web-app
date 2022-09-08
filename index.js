@@ -26,5 +26,6 @@ app.listen(port, (err) => {
 
 setInterval( () => {
 
-	count++;
+	obj.count++;
+	
 }, 1000);
