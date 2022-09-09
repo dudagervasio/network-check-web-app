@@ -13,13 +13,14 @@ const config = {
 	maxTimeWithNoReport: process.env.MINUTES_WITH_NO_REPORT ? process.env.MINUTES_WITH_NO_REPORT * 60 * 1000 : 2 * 60 * 1000,
 	defaultTimeBetweenNoReportEmails: process.env.MINUTES_BETWEEN_NO_REPORT_EMAILS ? process.env.MINUTES_BETWEEN_NO_REPORT_EMAILS * 60 * 1000 : 15 * 60 * 1000,
 	intervalForNoReportCheck: process.env.MINUTES_INTERVAL_FOR_NO_REPORT_CHECK ? process.env.MINUTES_INTERVAL_FOR_NO_REPORT_CHECK * 60 * 1000 : 2 * 60 * 1000,
+	intervalForReportEmail: process.env.MINUTES_INTERVAL_FOR_REPORT_EMAIL ? process.env.MINUTES_INTERVAL_FOR_REPORT_EMAIL * 60 * 1000 : 4 * 60 * 60 * 1000,
 	nodeEnv: process.env.NODE_ENV || 'undefined',
 }
 
 const status = {
 	lastReport: Date.now(),
 	lastSendNoReportMail: 0,
-	mailsSent: []
+	mailsSent: [],
 };
 
 /* ROTAS LIBERADAS DE TOKEN */
@@ -109,6 +110,8 @@ setInterval( async () => {
 			console.log('send no report e-mail');
 
 			const info = await sendMail('Report timeout! Muito tempo sem receber informação do servidor!' + '\r\n' + 'Env:' + config.nodeEnv);
+			
+			console.log('mail', info);
 
 			status.lastSendNoReportMail = Date.now();
 
@@ -117,9 +120,22 @@ setInterval( async () => {
 				reason: 'No Report'
 			});
 
-			console.log('mail', info);
 
 		}
 	}
 	
 }, config.intervalForNoReportCheck );
+
+setInterval( async () => {
+
+	console.log('run report email');
+
+	let text = 'Report e-mail \r\n';
+
+	text += JSON.stringify( status.mailsSent );
+
+	const info = await sendMail(text + ' \r\n ' + 'Env:' + config.nodeEnv);
+
+	status.mailsSent = [];
+	
+}, config.intervalForReportEmail );
