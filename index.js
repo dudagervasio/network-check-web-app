@@ -16,7 +16,7 @@ app.get('/', (req, res) => {
 })
 
 app.get('/counter', (req, res) => {
-  res.send( obj );
+  res.send( status );
 })
 
 app.get('/sendMail', async (req, res) => {
@@ -49,10 +49,8 @@ app.listen(port, (err) => {
 
 })
 
-
-
 setInterval( () => {
 
-	obj.count++;
+	status.count++;
 	
 }, 1000);
