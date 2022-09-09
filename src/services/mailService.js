@@ -17,7 +17,7 @@ async function sendMail(text) {
 		port: 465,
 		secure: true, 
 		auth: {
-			user: "contato@hidrtapharma.com.br",
+			user: "contato@hidratapharma.com.br",
 			pass: "@hidcontato01"
 		}
 	});
