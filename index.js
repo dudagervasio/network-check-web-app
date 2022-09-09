@@ -3,10 +3,31 @@ require('dotenv').config();
 const express = require('express');
 
 const { sendMail } = require('./src/services/mailService');
+
 const app = express();
 
 const port = process.env.PORT || 3033;
 
+const config = {
+
+	maxTimeWithNoReport: process.env.MINUTES_WITH_NO_REPORT ? process.env.MINUTES_WITH_NO_REPORT * 60 * 1000 : 2 * 60 * 1000,
+	defaultTimeBetweenNoReportEmails: process.env.MINUTES_BETWEEN_NO_REPORT_EMAILS ? process.env.MINUTES_BETWEEN_NO_REPORT_EMAILS * 60 * 1000 : 15 * 60 * 1000,
+	intervalForNoReportCheck: process.env.MINUTES_INTERVAL_FOR_NO_REPORT_CHECK ? process.env.MINUTES_INTERVAL_FOR_NO_REPORT_CHECK * 60 * 1000 : 2 * 60 * 1000,
+}
+
+const status = {
+	lastReport: Date.now(),
+	lastSendNoReportMail: 0,
+};
+
+/* ROTAS LIBERADAS DE TOKEN */
+app.get('/status', (req, res) => {
+
+	res.send( { status, config } );
+});
+
+
+/* ROTAS COM TOKEN E JSON */
 app.use(express.json());
 
 app.use( (req, res, next) => {
@@ -32,29 +53,19 @@ app.use( (req, res, next) => {
 
 });
 
-const status = {
-	lastReport: Date.now(),
-	error: false,
-	count: 0
-};
-
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
-
 app.post('/report', async (req, res) => {
 
 	res.status(200).send();
 
 	status.lastReport = Date.now();
 
-	//console.log('Got body:', req.body);
+	console.log('report received:', req.body);
 
 	if(!req.body.success){
 
 		const info = await sendMail(req.body.message);
 
-		//console.log('mail');
+		console.log('mail report on failure');
 		//console.log(info);
 
 	}
@@ -69,16 +80,27 @@ app.listen(port, (err) => {
 
 setInterval( async () => {
 
-	//console.log('run');
+	console.log('run last report check');
 
-	if((Date.now() - status.lastReport) > (30 * 60 * 1000) ){
+	const timeSinceLastReport = Date.now() - status.lastReport;
 
-		//console.log('much time');
+	if(timeSinceLastReport > config.maxTimeWithNoReport ){
 
-		const info = await sendMail('Report timeout! Muito tempo sem receber informação do servidor!');
+		console.log('much time with no report');
 
-		//console.log('mail', info);
+		const timeSinceLastNoReportEmail = Date.now() - status.lastSendNoReportMail;
 
+		if(timeSinceLastNoReportEmail > config.defaultTimeBetweenNoReportEmails){
+
+			console.log('send no report e-mail');
+
+			const info = await sendMail('Report timeout! Muito tempo sem receber informação do servidor!');
+
+			status.lastSendNoReportMail = Date.now();
+
+			console.log('mail', info);
+
+		}
 	}
 	
-}, 10 * 60 * 1000 );
+}, config.intervalForNoReportCheck );
