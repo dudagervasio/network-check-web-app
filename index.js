@@ -1,47 +1,65 @@
 require('dotenv').config();
 
 const express = require('express');
+
 const { sendMail } = require('./src/services/mailService');
-const app = express()
-const port = process.env.PORT || 80;
+const app = express();
+
+const port = process.env.PORT || 3033;
+
+app.use(express.json());
+
+app.use( (req, res, next) => {
+
+/* 	console.log('middleware in action');
+	console.log('Got body:', req.body);
+	console.log('Got headers:', req.headers);
+ */
+   
+	const token = req.headers.token;
+
+	if (token === process.env.TOKEN){
+
+		next();
+
+	}else{
+
+		res.status(401).json({
+		error: 'Invalid request'
+		});
+
+	}
+
+});
 
 const status = {
+	lastReport: Date.now(),
 	error: false,
 	count: 0
 };
-
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
-app.get('/counter', (req, res) => {
-  res.send( status );
-})
+app.post('/report', async (req, res) => {
 
-app.get('/sendMail', async (req, res) => {
+	res.status(200).send();
 
-	try{
+	status.lastReport = Date.now();
 
-		const info = await sendMail('teste');
+	//console.log('Got body:', req.body);
 
-		res.send( {
-			success: true,
-			info
-		} );
+	if(!req.body.success){
 
-	}catch(err){
+		const info = await sendMail(req.body.message);
 
-		console.log(err);
-
-		res.send( {
-			success: false,
-			err
-		} );
+		//console.log('mail');
+		//console.log(info);
 
 	}
 	
-})
+});
 
 app.listen(port, (err) => {
 
@@ -49,8 +67,18 @@ app.listen(port, (err) => {
 
 })
 
-setInterval( () => {
+setInterval( async () => {
 
-	status.count++;
+	//console.log('run');
+
+	if((Date.now() - status.lastReport) > (50 * 1000) ){
+
+		//console.log('much time');
+
+		const info = await sendMail('Report timeout! Muito tempo sem receber informação do servidor!');
+
+		//console.log('mail', info);
+
+	}
 	
-}, 1000);
+}, 10 * 1000 );

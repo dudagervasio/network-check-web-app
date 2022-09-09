@@ -28,7 +28,7 @@ async function sendMail(text) {
 		to: "luis.eduardo@hidratapharma.com.br, dudagervasio@yahoo.com.br", // list of receivers
 		subject: "NETWORK PROBLEM", // Subject line
 		text, // plain text body
-		html: "<b>" + text + "</b>", // html body
+		html: "<b>" + text.replace('\r\n', '<br>') + "</b>", // html body
 	  });
 	
   console.log("Message sent: %s", info.messageId);
