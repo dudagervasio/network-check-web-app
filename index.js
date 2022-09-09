@@ -71,7 +71,7 @@ setInterval( async () => {
 
 	//console.log('run');
 
-	if((Date.now() - status.lastReport) > (50 * 1000) ){
+	if((Date.now() - status.lastReport) > (30 * 60 * 1000) ){
 
 		//console.log('much time');
 
@@ -81,4 +81,4 @@ setInterval( async () => {
 
 	}
 	
-}, 10 * 1000 );
+}, 10 * 60 * 1000 );
