@@ -87,15 +87,15 @@ app.post('/report', async (req, res) => {
 
 	res.status(200).send();
 
+	console.log('report received:', req.body);
+
 	let { props } = await status.get("report");
 
 	await status.set("report", {
 		lastReport: Date.now(),
 		lastSendNoReportMail: props.lastSendNoReportMail
 	});
-
-	console.log('report received:', req.body);
-
+	
 	if(!req.body.success){
 
 		const info = await sendMail(req.body.message + '\r\n' + 'Env:' + config.nodeEnv);
