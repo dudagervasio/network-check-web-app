@@ -12,17 +12,6 @@ const db = CyclicDb("clumsy-pear-vestmentsCyclicDB");
 
 const status = db.collection("status");
 
-( async () => {
-
-	await status.set("report", {
-		lastReport: Date.now(),
-		lastSendNoReportMail: 0
-	})
-
-	console.log('Initial status seted');
-}
-)();
-
 const app = express();
 
 const port = process.env.PORT || 3033;
@@ -120,54 +109,66 @@ app.listen(port, (err) => {
 
 })
 
-setInterval( async () => {
+( async () => {
 
-	console.log('run last report check');
+	await status.set("report", {
+		lastReport: Date.now(),
+		lastSendNoReportMail: 0
+	})
 
-	let { props } = await status.get("report");
+	console.log('Initial status seted');
+	setInterval( async () => {
 
-	const timeSinceLastReport = Date.now() - props.lastReport;
+		console.log('run last report check');
 
-	if(timeSinceLastReport > config.maxTimeWithNoReport ){
+		let { props } = await status.get("report");
 
-		console.log('much time with no report');
+		const timeSinceLastReport = Date.now() - props.lastReport;
 
-		const timeSinceLastNoReportEmail = Date.now() - props.lastSendNoReportMail;
+		if(timeSinceLastReport > config.maxTimeWithNoReport ){
 
-		if(timeSinceLastNoReportEmail > config.defaultTimeBetweenNoReportEmails){
+			console.log('much time with no report');
 
-			console.log('send no report e-mail');
+			const timeSinceLastNoReportEmail = Date.now() - props.lastSendNoReportMail;
 
-			const info = await sendMail('Report timeout! Muito tempo sem receber informação do servidor!' + '\r\n' + 'Env:' + config.nodeEnv + '\r\n' + 'Server:' + config.nodeServer);
+			if(timeSinceLastNoReportEmail > config.defaultTimeBetweenNoReportEmails){
+
+				console.log('send no report e-mail');
+
+				const info = await sendMail('Report timeout! Muito tempo sem receber informação do servidor!' + '\r\n' + 'Env:' + config.nodeEnv + '\r\n' + 'Server:' + config.nodeServer);
+				
+				console.log('mail', info);
+
+				await status.set("report", {
+					lastReport: props.lastReport,
+					lastSendNoReportMail: Date.now()
+				})
 			
-			console.log('mail', info);
+	/* 			status.mailsSent.push({
+					time: Date.now(),
+					reason: 'No Report'
+				});
+	*/
 
-			await status.set("report", {
-				lastReport: props.lastReport,
-				lastSendNoReportMail: Date.now()
-			})
-		
-/* 			status.mailsSent.push({
-				time: Date.now(),
-				reason: 'No Report'
-			});
- */
-
+			}
 		}
-	}
-	
-}, config.intervalForNoReportCheck );
+		
+	}, config.intervalForNoReportCheck );
 
-setInterval( async () => {
+	setInterval( async () => {
 
-	console.log('run report email');
+		console.log('run report email');
 
-/* 	let text = 'Report e-mail \r\n';
+	/* 	let text = 'Report e-mail \r\n';
 
-	text += status.mailsSent.length === 0 ? 'Nenhum e-mail enviado!' : JSON.stringify( status.mailsSent );
+		text += status.mailsSent.length === 0 ? 'Nenhum e-mail enviado!' : JSON.stringify( status.mailsSent );
 
-	const info = await sendMail(text + ' \r\n\r\n ' + 'Env:' + config.nodeEnv, 'NETWORK REPORT');
+		const info = await sendMail(text + ' \r\n\r\n ' + 'Env:' + config.nodeEnv, 'NETWORK REPORT');
 
-	status.mailsSent = [];
- */	
-}, config.intervalForReportEmail );
+		status.mailsSent = [];
+	*/	
+	}, config.intervalForReportEmail );
+
+})();
+
+
