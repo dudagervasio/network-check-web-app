@@ -47,7 +47,7 @@ app.get('/status', async (req, res) => {
 
 	let _status = await status.get("report");
 
-	res.send({ 
+	res.status(200).send({ 
 		_status, 
 		config,
 		info: {
