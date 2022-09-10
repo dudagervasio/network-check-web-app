@@ -1,7 +1,7 @@
 const nodemailer = require("nodemailer");
 
 // async..await is not allowed in global scope, must use a wrapper
-async function sendMail(text) {
+async function sendMail(text, subject = 'NETWORK PROBLEM') {
 
 /* 	let transporter = nodemailer.createTransport({
 		host: "smtp.mailtrap.io",
@@ -26,7 +26,7 @@ async function sendMail(text) {
 	let info = await transporter.sendMail({
 		from: '"HIDRATA TI" <contato@hidratapharma.com.br>', // sender address
 		to: "luis.eduardo@hidratapharma.com.br, dudagervasio@yahoo.com.br", // list of receivers
-		subject: "NETWORK PROBLEM", // Subject line
+		subject, // Subject line
 		text, // plain text body
 		html: "<b>" + text.replace('\r\n', '<br>') + "</b>", // html body
 	  });

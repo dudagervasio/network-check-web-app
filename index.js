@@ -13,7 +13,7 @@ const config = {
 	maxTimeWithNoReport: process.env.MINUTES_WITH_NO_REPORT ? process.env.MINUTES_WITH_NO_REPORT * 60 * 1000 : 2 * 60 * 1000,
 	defaultTimeBetweenNoReportEmails: process.env.MINUTES_BETWEEN_NO_REPORT_EMAILS ? process.env.MINUTES_BETWEEN_NO_REPORT_EMAILS * 60 * 1000 : 15 * 60 * 1000,
 	intervalForNoReportCheck: process.env.MINUTES_INTERVAL_FOR_NO_REPORT_CHECK ? process.env.MINUTES_INTERVAL_FOR_NO_REPORT_CHECK * 60 * 1000 : 2 * 60 * 1000,
-	intervalForReportEmail: process.env.MINUTES_INTERVAL_FOR_REPORT_EMAIL ? process.env.MINUTES_INTERVAL_FOR_REPORT_EMAIL * 60 * 1000 : 4 * 60 * 60 * 1000,
+	intervalForReportEmail: process.env.MINUTES_INTERVAL_FOR_REPORT_EMAIL ? process.env.MINUTES_INTERVAL_FOR_REPORT_EMAIL * 60 * 1000 : 1 * 60 * 60 * 1000,
 	nodeEnv: process.env.NODE_ENV || 'undefined',
 }
 
@@ -30,7 +30,7 @@ app.get('/status', (req, res) => {
 		status, 
 		config,
 		info: {
-			version: 2
+			version: 3
 		}
 	});
 });
@@ -132,9 +132,9 @@ setInterval( async () => {
 
 	let text = 'Report e-mail \r\n';
 
-	text += JSON.stringify( status.mailsSent );
+	text += status.mailsSent.length === 0 ? 'Nenhum e-mail enviado!' : JSON.stringify( status.mailsSent );
 
-	const info = await sendMail(text + ' \r\n ' + 'Env:' + config.nodeEnv);
+	const info = await sendMail(text + ' \r\n\r\n ' + 'Env:' + config.nodeEnv, 'NETWORK REPORT');
 
 	status.mailsSent = [];
 	
