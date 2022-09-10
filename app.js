@@ -33,7 +33,8 @@ const config = {
 	defaultTimeBetweenNoReportEmails: process.env.MINUTES_BETWEEN_NO_REPORT_EMAILS ? process.env.MINUTES_BETWEEN_NO_REPORT_EMAILS * 60 * 1000 : 15 * 60 * 1000,
 	intervalForNoReportCheck: process.env.MINUTES_INTERVAL_FOR_NO_REPORT_CHECK ? process.env.MINUTES_INTERVAL_FOR_NO_REPORT_CHECK * 60 * 1000 : 2 * 60 * 1000,
 	intervalForReportEmail: process.env.MINUTES_INTERVAL_FOR_REPORT_EMAIL ? process.env.MINUTES_INTERVAL_FOR_REPORT_EMAIL * 60 * 1000 : 1 * 60 * 60 * 1000,
-	nodeEnv: process.env.NODE_ENV || 'undefined',
+	nodeEnv: process.env.NODE_ENV || 'undefined', 
+	nodeServer: process.env.NODE_SERVER || 'undefined', 
 }
 
 /* const status = {
@@ -137,7 +138,7 @@ setInterval( async () => {
 
 			console.log('send no report e-mail');
 
-			const info = await sendMail('Report timeout! Muito tempo sem receber informação do servidor!' + '\r\n' + 'Env:' + config.nodeEnv);
+			const info = await sendMail('Report timeout! Muito tempo sem receber informação do servidor!' + '\r\n' + 'Env:' + config.nodeEnv + '\r\n' + 'Server:' + config.nodeServer);
 			
 			console.log('mail', info);
 
